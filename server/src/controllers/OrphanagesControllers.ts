@@ -4,7 +4,7 @@ import Orphanage from '../models/Orphanage';
 import OrphanageView from '../views/orphanages_view';
 import * as Yup from 'yup';
 
-export default {
+export default class OrphanagesController  {
 
     async index(_: Request, response: Response) {
 
@@ -14,7 +14,7 @@ export default {
         });
 
         return response.json(OrphanageView.renderMany(orphanages));
-    },
+    }
 
     async show(request: Request, response: Response) {
         const { id } = request.params;
@@ -24,7 +24,7 @@ export default {
         });
     
         return response.json(OrphanageView.render(orphanage));
-    },
+    }
 
     async create (request: Request, response: Response) {
 
@@ -73,7 +73,7 @@ export default {
         console.log(orphanage);
         
         return response.status(201).json(orphanage);
-    },
+    }
 
     async updateImage (request: Request, response: Response) {
 
@@ -104,9 +104,6 @@ export default {
             whatsapp, images
         };
 
-
-        
-
         orphanagesRepository.save({
             ...orphanage, // existing fields
             ...updateorphanage // updated fields
@@ -116,8 +113,6 @@ export default {
 
         return response.status(201).json(orphanage);
     }
-
-    
 }
 
 
