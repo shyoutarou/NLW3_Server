@@ -23,13 +23,12 @@ export default class UsersController  {
 
             const schema = Yup.object().shape({
                 name: Yup.string().max(15, 'Seu nome deve ter no máximo 15 caracteres.')
-                    .min(2, 'Seu nome deve ter no mínimo 2 caracteres.').required('O nome é obrigatório!'),
+                    .min(2, 'Seu nome deve ter no mínimo 2 caracteres.').required('O nome é obrigatório!'),                
                 email: Yup.string().email('Email inválido!').required('O email é obrigatório!'),
                 uncryptedPass: Yup.string().required('A senha é obrigatória!')
             })
             
             await schema.validate({ name, email, uncryptedPass }, { abortEarly: false })
-            
 
             const emailExists = await userRepository.findOne({ where: { email } })
     

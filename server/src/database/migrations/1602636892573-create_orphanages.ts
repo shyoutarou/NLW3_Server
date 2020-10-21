@@ -18,7 +18,8 @@ export class createOrphanages1602636892573 implements MigrationInterface {
                 { name: 'opening_hours', type: 'varchar' },              
                 { name: 'open_on_weekends', type: 'boolean', default: false },
                 { name: 'whatsapp', type: 'varchar', isNullable:true},
-                { name: "user_id", type: "integer"}
+                { name: "user_id", type: "integer", isNullable:true},
+                { name: 'permission', type: 'boolean', default: false },
             ],
             foreignKeys: [
               {

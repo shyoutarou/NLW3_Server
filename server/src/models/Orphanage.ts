@@ -34,6 +34,9 @@ export default class Orphanage {
     @Column()
     user_id: number
 
+    @Column()
+    permission: boolean;
+    
     @OneToMany(() => Image, image => image.orphanage, {
         cascade: ['insert', 'update']
     })
