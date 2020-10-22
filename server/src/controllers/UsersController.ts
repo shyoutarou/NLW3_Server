@@ -10,41 +10,29 @@ import { MailtrapMailProvider } from "../providers/implementations/MailtrapMailP
 
 function generateToken(params: any) {
     return jwt.sign(params, String(process.env.SECRET_KEY), {
-      expiresIn: '20m',
+      expiresIn: '2m',
     })
   }
 
 export default class UsersController  {
     async create(req: Request, res: Response) {
-
         try {
-            const { name, email, password: uncryptedPass } = req.body
+            const { name, email, password } = req.body
             const userRepository = getRepository(User)
 
             const schema = Yup.object().shape({
                 name: Yup.string().max(15, 'Seu nome deve ter no máximo 15 caracteres.')
                     .min(2, 'Seu nome deve ter no mínimo 2 caracteres.').required('O nome é obrigatório!'),                
                 email: Yup.string().email('Email inválido!').required('O email é obrigatório!'),
-                uncryptedPass: Yup.string().required('A senha é obrigatória!')
+                password: Yup.string().required('A senha é obrigatória!')
             })
             
-            await schema.validate({ name, email, uncryptedPass }, { abortEarly: false })
+            await schema.validate({ name, email, password }, { abortEarly: false })
 
-            const emailExists = await userRepository.findOne({ where: { email } })
-    
-            if (emailExists) return res.status(400)
-            .json({ success: false, message: 'Email já cadastrado' });
-            
-            const user = new User()
-            user.name = name
-            user.email = email
-
-            const salt =  await bcrypt.genSalt(10);
-            const password = await bcrypt.hash(uncryptedPass, salt)
-            user.password = password
-
+            const data = { name, email, password };
+            const user = userRepository.create(data);
             await userRepository.save(user)
-            
+
             return res.status(200).json(users_view.render(user))
         }
         catch (err) {
@@ -95,7 +83,9 @@ export default class UsersController  {
                 return res.status(404).json({ message: 'Usuário não cadastrado!' })
             }
 
-            if(!await bcrypt.compare(password, user.password)) {
+            const validado  = await bcrypt.compare(password, user.password)
+
+            if(!validado) {
                 return res.status(401).json({ message: 'Usuário ou senha incorretos!' })
             }
 
@@ -154,9 +144,9 @@ export default class UsersController  {
 
             const mailProvider = new MailtrapMailProvider()
     
-            const body = `<div style="background-color: #8257E5; width: 500px; height: 400px;">
+            const body = `<div style="background-color: #0D96A6; width: 500px; height: 400px;">
                           <h1 style="color: white; font-size: 28px; text-align: center; padding: 40px;">Redefinição
-                          de senha - Proffy</h1>
+                          de senha - Happy</h1>
                           <h1 style="color: white; font-size: 20px; text-align: justify; padding: 0 24px;">Olá, ${user.name}!
                           Foi solicitada a redefinição da sua senha na nossa plataforma! Para prosseguir, clique no
                           botão abaixo e preencha os campos para completar o processo!</h1>
@@ -176,7 +166,7 @@ export default class UsersController  {
                   name: 'Equipe do meu app',
                   email: 'equipe@meuapp.com'
                 },          
-                subject: "Redefinição de Senha - Proffy", // Subject line
+                subject: "Redefinição de Senha - Happy", // Subject line
                 text: "Foi solicitada a redefinição da sua senha na nossa plataforma! Para prosseguir, entre no link a seguir e preencha os campos: ", // plain text body
                 body,
             })
@@ -239,7 +229,19 @@ export default class UsersController  {
             return response.status(401).send('Token inválido') //401 Unauthorized
         }
 
-        if(user.token_expires.getMilliseconds() < Date.now()) {
+        user.token_expires.toDateString() == new Date().toDateString()
+
+        var today = new Date().getTime();
+        var reqDateVar = new Date(user.token_expires).getTime();
+        
+        console.log(user.token_expires.getTime());
+        console.log(user.token_expires.toDateString() + "-" + user.token_expires.toTimeString());
+
+        const hoje =new Date();
+        console.log(hoje);
+        console.log(hoje.toDateString() + "-" + hoje.toTimeString());
+
+        if(user.token_expires.getTime() < Date.now()) {
             return response.status(401).send('Token vencido') //401 Unauthorized
         }
 

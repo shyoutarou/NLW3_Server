@@ -4,7 +4,6 @@ import OrphanagesController from './controllers/OrphanagesControllers';
 import UsersController from './controllers/UsersController';
 import uploadConfig from './config/multerConfig';
 
-
 const routes = Router();
 const upload = multer(uploadConfig);
 
@@ -22,6 +21,7 @@ routes.post('/resetPassword/:id', usersController.resetPassword)
 import auth from './middlewares/auth'
 
 routes.get('/orphanages', orphanagesController.index);
+routes.get('/indexPending/:ok', orphanagesController.indexPending);
 routes.get('/orphanages/:id', orphanagesController.show);
 routes.post('/orphanages', orphanagesController.create);
 routes.put('/orphanages/:id', upload.array('images'), orphanagesController.updateImage)

@@ -17,6 +17,20 @@ export default class OrphanagesController  {
         return response.json(OrphanageView.renderMany(orphanages));
     }
 
+    async indexPending(req: Request, res: Response) {
+        const { ok } = req.params;
+        const orphanagesRespository = getRepository(Orphanage)
+        
+        const orphanages = await orphanagesRespository.find({
+            where: {
+                permission: ok
+            },
+            relations: ['images']
+        })
+
+        return res.json(orphanages_view.renderMany(orphanages))
+    }
+  
     async show(request: Request, response: Response) {
         const { id } = request.params;
         const orphanagesRepository = getRepository(Orphanage);
@@ -30,14 +44,15 @@ export default class OrphanagesController  {
     async create (request: Request, response: Response) {
 
         const { name, latitude, longitude, about, whatsapp,
-            instructions, opening_hours, open_on_weekends } = request.body;
+            instructions, opening_hours, open_on_weekends, permission } = request.body;
     
         const orphanagesRepository = getRepository(Orphanage); 
 
         const data = { name, latitude, longitude, about,
             instructions, opening_hours, 
             open_on_weekends: open_on_weekends === 'true', 
-            whatsapp
+            whatsapp,
+            permission
         };
 
         const schema = Yup.object().shape({
@@ -48,7 +63,8 @@ export default class OrphanagesController  {
             instructions: Yup.string().required(),
             opening_hours: Yup.string().required(),
             open_on_weekends: Yup.boolean().required(),
-            whatsapp: Yup.string().notRequired()
+            whatsapp: Yup.string().notRequired(),
+            permission: Yup.boolean().required()
         });
 
         await schema.validate(data, { abortEarly: false });
@@ -56,8 +72,6 @@ export default class OrphanagesController  {
         const orphanage = orphanagesRepository.create(data);
 
         await orphanagesRepository.save(orphanage);
-
-        console.log(orphanage);
         
         return response.status(201).json(orphanage);
     }
@@ -101,19 +115,7 @@ export default class OrphanagesController  {
         return response.status(201).json(orphanage);
     }
 
-    async indexPending(req: Request, res: Response) {
-        const orphanagesRespository = getRepository(Orphanage)
-
-        const orphanages = await orphanagesRespository.find({
-            where: {
-                approved: false
-            },
-            relations: ['images']
-        })
-
-        return res.json(orphanages_view.renderMany(orphanages))
-    }
-
+ 
     async approveOrphanage(req: Request, res: Response) {
 
         const { id } = req.params
