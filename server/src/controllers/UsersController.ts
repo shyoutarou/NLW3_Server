@@ -10,7 +10,7 @@ import { MailtrapMailProvider } from "../providers/implementations/MailtrapMailP
 
 function generateToken(params: any) {
     return jwt.sign(params, String(process.env.SECRET_KEY), {
-      expiresIn: '2m',
+      expiresIn: '20m',
     })
   }
 
