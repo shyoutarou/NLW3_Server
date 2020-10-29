@@ -234,12 +234,12 @@ export default class UsersController  {
         var today = new Date().getTime();
         var reqDateVar = new Date(user.token_expires).getTime();
         
-        console.log(user.token_expires.getTime());
-        console.log(user.token_expires.toDateString() + "-" + user.token_expires.toTimeString());
+        // console.log(user.token_expires.getTime());
+        // console.log(user.token_expires.toDateString() + "-" + user.token_expires.toTimeString());
 
         const hoje =new Date();
-        console.log(hoje);
-        console.log(hoje.toDateString() + "-" + hoje.toTimeString());
+        // console.log(hoje);
+        // console.log(hoje.toDateString() + "-" + hoje.toTimeString());
 
         if(user.token_expires.getTime() < Date.now()) {
             return response.status(401).send('Token vencido') //401 Unauthorized

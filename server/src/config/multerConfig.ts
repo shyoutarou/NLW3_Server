@@ -2,6 +2,8 @@ import multer from 'multer';
 import path from 'path';
 
 export default {
+
+       
     storage: multer.diskStorage({
         destination: path.join(__dirname, '..', '..', 'uploads'),
         filename: (request, file, cb) => {
@@ -12,18 +14,10 @@ export default {
     limits: {
         fileSize: 2*1024*1024
     },
-    filefilter: function(req: any, file: any, cb:any) {
-        const allowedMimes = [
-            "image/jpeg",
-            "image/pjpeg",
-            "image/png",
-            "image/gif"
-        ]
-
-        if (allowedMimes.includes(file.mimetype)) {
-            cb(null, true);
-        } else {
-            cb(new Error("Invalid file type."));
+    fileFilter: function (req: any, file: any, cb: any) {
+        if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+            return cb(new Error('Only image files are allowed!'));
         }
-    }
+        cb(null, true);
+      }
 };
