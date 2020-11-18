@@ -20,12 +20,15 @@ routes.post('/forgotPassword', usersController.forgotPassword)
 routes.post('/resetPassword/:id', usersController.resetPassword)
 
 routes.get('/orphanages', orphanagesController.index);
-routes.get('/indexPending/:ok', auth, orphanagesController.indexPending);
-routes.get('/orphanages/:id', auth, orphanagesController.show);
 routes.post('/orphanages', orphanagesController.create);
-routes.put('/orphanages/images/:id', upload.array('images'), orphanagesController.updateImage)
+
+routes.get('/indexPending/:ok', auth, orphanagesController.indexPending);
+routes.get('/orphanages/:id', orphanagesController.show);
 
 routes.delete('/orphanages/delete/:id', auth, orphanagesController.deleteOrphanage)
-routes.put('/orphanages/update/:id', orphanagesController.updateOrphanage)
+routes.put('/orphanages/update/:id', auth, orphanagesController.updateOrphanage)
+
+routes.put('/orphanages/deleteimages/:id', orphanagesController.deleteimages)
+routes.put('/orphanages/images/:id', upload.array('images'), orphanagesController.updateImage)
 
 export default routes;

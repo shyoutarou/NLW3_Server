@@ -4,6 +4,7 @@
 *.doc
 **/uploads/**
 **/cache/**/**
+!uploads/.gitkeep
 
 # Logs
 logs

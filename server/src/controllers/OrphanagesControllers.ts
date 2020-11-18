@@ -7,6 +7,54 @@ import * as Yup from 'yup';
 import orphanages_view from '../views/orphanages_view';
 import path from 'path';
 
+async function deleteImages(id: Number, RequestImages:  Express.Multer.File[]) {
+    const fs = require('fs')
+           
+    const imagesRepository = getRepository(ImageMod);
+
+    // const images = await imagesRepository.find({
+    //     where: { orphanage_id: Number(id) }
+    //   }); 
+    //     .andWhere("path NOT IN (:...paths)", { paths: RequestImages.map(image => image.filename.split("-")[1]) });
+
+    let query = imagesRepository
+    .createQueryBuilder('images')
+    .where(`orphanage_id = ${ id }`);
+
+    const images = await query.getMany();
+
+    images.forEach(async (img : any) =>  {
+
+        let arquivos = RequestImages.filter(image => image.filename.split("-")[1] === img.path.split("-")[1] );
+
+        // console.log(arquivos);
+        // console.log(arquivos.length);
+
+        if(arquivos.length > 0 )
+        {
+            // console.log(img.path.split("-")[1]);
+
+            let file = path.join(__dirname, '..', '..', 'uploads', img.path);
+
+            fs.stat(file, function (err: any) {
+
+                if (!err) {
+                    fs.unlink(file, (err: any) => {
+                        if (err) {
+                        console.error(err)
+                        return
+                        }
+                    })
+                }
+             });
+
+            await imagesRepository.remove(img);
+        }
+
+        }
+    )        
+  }
+
 export default class OrphanagesController  {
 
     async index(_: Request, response: Response) {
@@ -79,47 +127,69 @@ export default class OrphanagesController  {
         return response.status(201).json(orphanage);
     }
 
-    async updateImage (request: Request, response: Response) {
+
+    async deleteimages (request: Request, response: Response) {
+
+        const { id } = request.params;
+
+        const { previewImages } = request.body;
 
         const fs = require('fs')
-        const { id } = request.params;
            
         const imagesRepository = getRepository(ImageMod);
+    
+        let splitpaths = previewImages.map( (img : any) => img.split("uploads/")[1])
 
-        const images = await imagesRepository.find({
-            where: { orphanage_id: Number(id) }
-          });
+        splitpaths = splitpaths.filter((item : any) => item !== undefined)
 
-        images.forEach(async img  =>  {
+        let query = imagesRepository
+        .createQueryBuilder('images')
+        .where(`orphanage_id = ${ id }`);
 
-                let file = path.join(__dirname, '..', '..', 'uploads', img.path);
+        if(splitpaths.length > 0) 
+        {
+            query = query.andWhere("path NOT IN (:...paths)", { paths: splitpaths })
+        }
 
-                fs.stat(file, function (err: any) {
+        const imagesBD = await query.getMany();
+         
+        imagesBD.forEach(async (img : any) =>  {
 
-                    if (!err) {
-                        fs.unlink(file, (err: any) => {
-                            if (err) {
-                            console.error(err)
-                            return
-                            }
-                        })
-                    }
-                 });
+            let file = path.join(__dirname, '..', '..', 'uploads', img.path);
 
-                await imagesRepository.remove(img);
+            fs.stat(file, function (err: any) {
 
-            }
-        )
+                if (!err) {
+                    fs.unlink(file, (err: any) => {
+                        if (err) {
+                        console.error(err)
+                        return
+                        }
+                    })
+                }
+                });
+
+            await imagesRepository.remove(img);
+        });
+
+        return response.status(201).json(imagesBD);
+    }
+
+
+    async updateImage (request: Request, response: Response) {
+
+        const { id } = request.params;
+        const imagesRepository = getRepository(ImageMod);
 
         const RequestImages = request.files as Express.Multer.File[];
 
-        RequestImages.forEach(async image =>  {
+        RequestImages?.forEach(async image =>  {
             const data = { path: image.filename, orphanage_id: Number(id) };
             const imagedb = imagesRepository.create(data);
             await imagesRepository.save(imagedb);
         });
 
-        return response.status(201).json(images);
+        return response.status(201).json(true);
     }
 
     async updateOrphanage(req: Request, res: Response) {
@@ -194,6 +264,8 @@ export default class OrphanagesController  {
 
         await orphanagesRepository.delete(orphanage)
 
+        deleteImages(Number(id), {} as Express.Multer.File[])
+
         return res.status(200).json({ message: "Orphanage successfully deleted!" })
     }
 }
@@ -209,64 +281,3 @@ export default class OrphanagesController  {
 
 
 
-
-
-
-
-// export default {
-//     async index(_: Request, response: Response) {
-//         const orphanagesRepository = getRepository(Orphanage);
-//         const orphanages = await orphanagesRepository.find({
-//             relations: ['images']
-//         });
-
-//         return response.json(OrphanageView.renderMany(orphanages));
-//     },
-
-//     async show(request: Request, response: Response) {
-//         const { id } = request.params;
-//         const orphanagesRepository = getRepository(Orphanage);
-//         const orphanage = await orphanagesRepository.findOneOrFail(id, {
-//             relations: ['images']
-//         });
-        
-//         return response.json(OrphanageView.render(orphanage));
-//     },
-
-//     async create (request: Request, response: Response) {
-
-//         const { 
-//             name,
-//             latitude,
-//             longitude,
-//             about,
-//             instructions,
-//             opening_hours,
-//             open_on_weekends,
-//          } = request.body;
-    
-//         const orphanagesRepository = getRepository(Orphanage);
-
-//         // const requestImages = request.files as Express.Multer.File[];
-
-//         // const images = requestImages.map(image => {
-//         //     return { path: image.filename }
-//         // });
-
-//         const data = {
-//             name,
-//             latitude,
-//             longitude,
-//             about,
-//             instructions,
-//             opening_hours,
-//             open_on_weekends: JSON.parse(open_on_weekends)
-//         };
-        
-//         const orphanage = orphanagesRepository.create(data);
-    
-//         await orphanagesRepository.save(orphanage);
-    
-//         return response.status(201).json(orphanage);
-//     }
-// }

@@ -132,10 +132,42 @@ export default class UsersController  {
     
             const password_token = crypto.randomBytes(16).toString('hex')
             const token_expires = new Date()
-            token_expires.setMinutes(token_expires.getMinutes() + 60)
+            const date_expires = new Date()
+            // token_expires.setMinutes(token_expires.getMinutes() + 1)
+
+            // console.log("token_expires: " + token_expires.getTime());
+            // console.log("token_expires: " + token_expires.toDateString() + "-" + user.token_expires.toTimeString());
     
-     
-            const updateuser = { password_token, token_expires };
+            console.log("token_expires " + token_expires); // 2017-12-01T03:40:39.639Z
+
+
+            const d1 = new Date();
+            const d2 = new Date(
+                Date.UTC(
+                    d1.getUTCFullYear(),
+                    d1.getUTCMonth(),
+                    d1.getUTCDate(),
+                    d1.getUTCHours(),
+                    d1.getUTCMinutes(),
+                    d1.getUTCSeconds(),
+                    d1.getUTCMilliseconds(),
+                ),
+            );
+            const d3 = new Date(
+                d1.getUTCFullYear(),
+                d1.getUTCMonth(),
+                d1.getUTCDate(),
+                d1.getUTCHours(),
+                d1.getUTCMinutes(),
+                d1.getUTCSeconds(),
+                d1.getUTCMilliseconds(),
+            );
+            console.log("d1 " + d1.toISOString()); // 2017-12-01T11:40:39.639Z
+            console.log("d2 " + d2.toISOString()); // 2017-12-01T11:40:39.639Z
+            console.log("d3 " + d3.toISOString()); // 2017-12-01T03:40:39.639Z
+
+
+            const updateuser = { password_token, token_expires, date_expires };
 
             userRepository.save({
                 ...user, // existing fields
@@ -158,15 +190,9 @@ export default class UsersController  {
                           </div>`
             
               await mailProvider.sendMail({
-                to: {
-                  name: user.name,
-                  email: email
-                },      
-                from: {
-                  name: 'Equipe do meu app',
-                  email: 'equipe@meuapp.com'
-                },          
-                subject: "Redefinição de Senha - Happy", // Subject line
+                to: { name: user.name, email: email },      
+                from: { name: 'Equipe do meu app', email: 'equipe@meuapp.com' },          
+                subject: "Redefinição de Senha - Happy", 
                 text: "Foi solicitada a redefinição da sua senha na nossa plataforma! Para prosseguir, entre no link a seguir e preencha os campos: ", // plain text body
                 body,
             })
@@ -229,30 +255,35 @@ export default class UsersController  {
             return response.status(401).send('Token inválido') //401 Unauthorized
         }
 
-        user.token_expires.toDateString() == new Date().toDateString()
+        // user.token_expires.toDateString() == new Date().toDateString()
 
         var today = new Date().getTime();
-        var reqDateVar = new Date(user.token_expires).getTime();
+        // var reqDateVar = new Date(user.token_expires).getTime();
         
         // console.log(user.token_expires.getTime());
         // console.log(user.token_expires.toDateString() + "-" + user.token_expires.toTimeString());
 
+        console.log(new Date().getTime());
+        console.log(new Date().toDateString() + "-" + new Date().toTimeString());
+
+        console.log(Date.now());
+        
         const hoje =new Date();
         // console.log(hoje);
         // console.log(hoje.toDateString() + "-" + hoje.toTimeString());
 
-        if(user.token_expires.getTime() < Date.now()) {
-            return response.status(401).send('Token vencido') //401 Unauthorized
-        }
+        // if(user.token_expires.getTime() < Date.now()) {
+        //     return response.status(401).send('Token vencido') //401 Unauthorized
+        // }
 
-        const hashpassword = await bcrypt.hash(password, 10)
+        // const hashpassword = await bcrypt.hash(password, 10)
 
-        const updateuser = { password: hashpassword, password_token: undefined, token_expires: undefined };
+        // const updateuser = { password: hashpassword, password_token: undefined, token_expires: undefined };
 
-        userRepository.save({
-            ...user, // existing fields
-            ...updateuser // updated fields
-        });
+        // userRepository.save({
+        //     ...user, // existing fields
+        //     ...updateuser // updated fields
+        // });
         
         return response.status(200).send('Password alterado com sucesso') //200 OK
     }       

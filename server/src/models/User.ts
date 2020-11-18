@@ -3,6 +3,8 @@ import { BeforeInsert, Column, Entity,
 import bcrypt from 'bcrypt'
 import Orphanage from './Orphanage'
 
+
+  
 @Entity('users')
 class User {
     @PrimaryGeneratedColumn()
@@ -15,6 +17,8 @@ class User {
     password: string
     @Column()
     password_token: string
+    @Column({ type: 'datetime' })
+    date_expires: Date
     @Column()
     token_expires: Date
     @OneToMany(type => Orphanage, orphanage => orphanage.user)
